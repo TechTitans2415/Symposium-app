@@ -1,0 +1,14 @@
+# Don't upload sensitive files
+.env
+config.py
+
+# Python cache
+__pycache__/
+*.pyc
+
+# VSCode settings (optional)
+.vscode/
+
+# Environment folders
+env/
+venv/

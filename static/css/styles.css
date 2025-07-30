@@ -1,0 +1,105 @@
+body {
+    margin: 0;
+    padding: 0;
+    background: url("../images/bg.png") no-repeat center center fixed;
+    background-size: cover;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: white;
+}
+
+.container {
+    text-align: center;
+    padding: 100px 20px;
+}
+
+h1 {
+    font-size: 48px;
+    margin-bottom: 10px;
+    animation: fadeInDown 1s ease;
+}
+
+p {
+    font-size: 20px;
+    animation: fadeInUp 1.2s ease;
+}
+
+.login-btn {
+    margin-top: 30px;
+    padding: 12px 30px;
+    font-size: 18px;
+    background: white;
+    color: #0072ff;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    animation: fadeInUp 1.5s ease;
+}
+
+.login-btn:hover {
+    background: #0072ff;
+    color: white;
+    border: 2px solid white;
+}
+
+.logout {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    background: white;
+    color: #0072ff;
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.user-info {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.user-info img {
+    border-radius: 50%;
+    width: 100px;
+    margin-top: 20px;
+}
+
+.section {
+    margin-top: 60px;
+    padding: 20px;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+
+.section h2 {
+    color: white;
+}
+
+@keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-40px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(40px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+
+.logo-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.logo-img {
+    width: 150px;
+    height: 50px;
+    object-fit: contain;
+    border-radius: 10px;
+}
