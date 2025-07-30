@@ -8,58 +8,45 @@
 </head>
 <body>
 
-    {% if user %}
-        <a class="logout" href="/logout">Logout</a>
-    {% endif %}
-
     <div class="container">
-         <div class="logo-header">
-        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="College Logo" class="logo-img">
-         </div>
+        <div class="logo-header">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="College Logo" class="logo-img">
+        </div>
         <h1>Welcome to Our College Symposium</h1>
         <p>Empowering Innovation, Showcasing Talent</p>
 
-        {% if not user %}
-            <a href="/login"><button class="login-btn">Login with Google</button></a>
-        {% else %}
-            <div class="user-info">
-                <h2>Hello, {{ user.name }}!</h2>
-                <img src="{{ user.picture }}" alt="Profile Picture">
-            </div>
+        <div class="section">
+            <h2>📅 Event Details</h2>
+            <p>Symposium Date: August 25, 2025</p>
+            <p>Venue: CSE Department Auditorium</p>
+        </div>
 
-            <div class="section">
-                <h2>📅 Event Details</h2>
-                <p>Symposium Date: August 25, 2025</p>
-                <p>Venue: CSE Department Auditorium</p>
-            </div>
+        <div class="section">
+            <h2>🏆 Events & Rules</h2>
+            <ul>
+                <li>CodeSprint – Competitive Coding (Individual)</li>
+                <li>BrainBuzz – Technical Quiz (Team of 2)</li>
+                <li>Project Expo – Present your innovation</li>
+                <li>Poster Presentation – Topic-based creativity</li>
+            </ul>
+            <p>Rules are shared in your registration confirmation email.</p>
+        </div>
 
-            <div class="section">
-                <h2>🏆 Events & Rules</h2>
-                <ul>
-                    <li>CodeSprint – Competitive Coding (Individual)</li>
-                    <li>BrainBuzz – Technical Quiz (Team of 2)</li>
-                    <li>Project Expo – Present your innovation</li>
-                    <li>Poster Presentation – Topic-based creativity</li>
-                </ul>
-                <p>Rules are shared in your registration confirmation email.</p>
-            </div>
+        <div class="section">
+            <h2>🤝 Coordinators</h2>
+            <p>Ganesh Ram – +91-9876543210</p>
+            <p>Yuvashathiraj – +91-9876501234</p>
+            <p>Giridharan – +91-9876578234</p>
+            <p>Gopal – +91-9876123234</p>
+            <p>Dharun – +91-9845123234</p>
+        </div>
 
-            <div class="section">
-                <h2>🤝 Coordinators</h2>
-                <p>Ganesh Ram – +91-9876543210</p>
-                <p>Yuvashathiraj – +91-9876501234</p>
-                <p>Giridharan – +91-9876578234</p>
-                <p>Gopal – +91-9876123234</p>
-                <p>Dharun – +91-9845123234</p>
-            </div>
-
-            <div class="section">
-                <h2>📋 Registration</h2>
-                <a href="https://docs.google.com/forms/d/e/1FAIpQLScbnO5bwCI-C8zhvMmcOwumiswW-MH_3n7PibqOxuMM_Flrhw/viewform?usp=header" target="_blank">
-                    <button class="login-btn">Register via Google Form</button>
-                </a>
-            </div>
-        {% endif %}
+        <div class="section">
+            <h2>📋 Registration</h2>
+            <a href="https://docs.google.com/forms/d/e/1FAIpQLScbnO5bwCI-C8zhvMmcOwumiswW-MH_3n7PibqOxuMM_Flrhw/viewform?usp=header" target="_blank">
+                <button class="login-btn">Register via Google Form</button>
+            </a>
+        </div>
     </div>
 
 </body>

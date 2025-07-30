@@ -5,16 +5,12 @@ import os
 import json 
 import ast
 from config import (
-    GOOGLE_CLIENT_ID,
-    GOOGLE_CLIENT_SECRET,
-    GOOGLE_DISCOVERY_URL,
     SECRET_KEY,
     ADMIN_ID,
     ADMIN_PASSWORD,
     MAIL_ID,
     MAIL_APP_PASSWORD
 )
-from oauthlib.oauth2 import WebApplicationClient
 import requests
 import json
 import pandas as pd
@@ -33,74 +29,15 @@ socketio = SocketIO(cors_allowed_origins="*")
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*")  # allow multiple connections
 app.secret_key = SECRET_KEY
-client = WebApplicationClient(GOOGLE_CLIENT_ID)
-
 RESPONSES_FILE = 'responses.csv'
 STATUS_FILE = 'qr_status.csv'
 ATTENDANCE_FILE = 'attendance.csv'
 
-# ---- Google OAuth Functions ----
-def get_google_provider_cfg():
-    return requests.get(GOOGLE_DISCOVERY_URL).json()
 
 @app.route("/")
 def index():
     return render_template("index.html", user=session.get("user"))
 
-@app.route("/login")
-def login():
-    google_provider_cfg = get_google_provider_cfg()
-    auth_endpoint = google_provider_cfg["authorization_endpoint"]
-
-    request_uri = client.prepare_request_uri(
-        auth_endpoint,
-        redirect_uri=request.base_url + "/callback",
-        scope=["openid", "email", "profile"],
-    )
-    return redirect(request_uri)
-
-@app.route("/login/callback")
-def callback():
-    code = request.args.get("code")
-    google_provider_cfg = get_google_provider_cfg()
-    token_endpoint = google_provider_cfg["token_endpoint"]
-
-    token_url, headers, body = client.prepare_token_request(
-        token_endpoint,
-        authorization_response=request.url,
-        redirect_url=request.base_url,
-        code=code,
-    )
-    token_response = requests.post(
-        token_url,
-        headers=headers,
-        data=body,
-        auth=(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET),
-    )
-    client.parse_request_body_response(json.dumps(token_response.json()))
-
-    userinfo_endpoint = google_provider_cfg["userinfo_endpoint"]
-    uri, headers, body = client.add_token(userinfo_endpoint)
-    userinfo_response = requests.get(uri, headers=headers, data=body)
-
-    userinfo = userinfo_response.json()
-
-    full_name = userinfo.get("name", "Unknown User")
-    given_name = userinfo.get("given_name", "")
-    family_name = userinfo.get("family_name", "")
-
-    session["user"] = {
-        "name": f"{given_name} {family_name}".strip() if given_name else full_name,
-        "email": userinfo.get("email", "no-email@example.com"),
-        "picture": userinfo.get("picture", "")
-    }
-
-    return redirect(url_for("index"))
-
-@app.route("/logout")
-def logout():
-    session.clear()
-    return redirect(url_for("index"))
 
 # ---- Admin Login System ----
 @app.route("/admin-login", methods=["GET", "POST"])
