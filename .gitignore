@@ -1,6 +1,5 @@
 # Don't upload sensitive files
 .env
-config.py
 
 # Python cache
 __pycache__/
