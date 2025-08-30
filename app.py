@@ -1,8 +1,9 @@
 from eventlet import monkey_patch
 monkey_patch()
+
 from flask import Flask, redirect, url_for, session, request, render_template, jsonify
 import os
-import json 
+import json
 import ast
 from config import (
     SECRET_KEY,
@@ -12,17 +13,15 @@ from config import (
     MAIL_APP_PASSWORD
 )
 import requests
-import json
-import pandas as pd
 import qrcode
 import csv
 from email.message import EmailMessage
 import smtplib
-import cv2
 from datetime import datetime
 from flask_socketio import SocketIO, emit
+import numpy as np
+import pandas as pd
 
-socketio = SocketIO(cors_allowed_origins="*")
 
 
 # ---- Flask & OAuth Setup ----
@@ -33,7 +32,7 @@ RESPONSES_FILE = 'responses.csv'
 STATUS_FILE = 'qr_status.csv'
 ATTENDANCE_FILE = 'attendance.csv'
 
-
+    
 @app.route("/")
 def index():
     return render_template("index.html", user=session.get("user"))
@@ -45,10 +44,13 @@ def admin_login():
     if request.method == "POST":
         if request.form["admin_id"] == ADMIN_ID and request.form["admin_password"] == ADMIN_PASSWORD:
             session["admin"] = True
-            return redirect("/admin-dashboard")
+            # redirect to the page user wanted, else dashboard
+            next_page = request.args.get("next")
+            return redirect(next_page if next_page else "/admin-dashboard")
         else:
             return render_template("admin_login.html", error="Invalid credentials")
     return render_template("admin_login.html")
+
 
 @app.route("/admin-logout")
 def admin_logout():
@@ -58,7 +60,7 @@ def admin_logout():
 @app.route("/admin-dashboard")
 def admin_dashboard():
     if not session.get("admin"):
-        return redirect("/admin-login")
+        return redirect("/admin-login?next=/admin-dashboard")
 
     df = pd.read_csv(RESPONSES_FILE)
     qr_status = get_qr_status()
@@ -87,6 +89,7 @@ def admin_dashboard():
             "Department": row.get("Department", ""),
             "College": row.get("College", ""),
             "Year": row.get("Year", ""),
+            "Team members": row.get("Team members", ""),
             "status": status,
             "Time": time
         })
@@ -123,7 +126,8 @@ def send_qr_mail(to_email, qr_path):
     msg['Subject'] = "Your Symposium QR Code"
     msg['From'] = MAIL_ID
     msg['To'] = to_email
-    msg.set_content("Attached is your QR code for symposium check-in.")
+    msg.set_content("Greetings from the Technovation 2K25 Organizing Team! ✨\n\nThank you for registering for Technovation 2K25.\n\nAttached is your QR code, which contains your registration details. Please show this QR code at the event venue during check-in. It will be used to verify your details and mark your attendance.\n\nWe look forward to seeing you at Technovation 2K25!\n\nBest regards,\nOrganizing Team\nTechnovation 2K25")
+
 
     with open(qr_path, 'rb') as f:
         file_data = f.read()
@@ -148,11 +152,14 @@ def generate_mail():
 
     user = df[df['Email'] == email].iloc[0]
     participant_info = {
-        "Name": user.get("Name", ""),
-        "Email": user.get("Email", ""),
-        "Department": user.get("Department", ""),
-        "Year": user.get("Year", "")
-    }
+        "Name": str(user.get("Name", "")),
+        "Email": str(user.get("Email", "")),
+        "Department": str(user.get("Department", "")),
+        "College": str(user.get("College", "")),
+        "Year": str(user.get("Year", "")),   # 👈 always keep as string
+        "Team members": str(user.get("Team members", ""))
+        }
+
 
     # Now encode as clean JSON
     qr_data = json.dumps(participant_info, ensure_ascii=False)
@@ -173,38 +180,58 @@ def mark_attendance(email):
     if email not in df['Email'].values:
         return "Email not found"
 
+    # Define columns for attendance.csv
+    columns = ["Email", "Name", "Year", "Department", "College", "Team members", "Phone number", "Time", "Status"]
     if os.path.exists(ATTENDANCE_FILE):
         attendance_df = pd.read_csv(ATTENDANCE_FILE)
     else:
-        attendance_df = pd.DataFrame(columns=["Email", "Name", "Time", "Status"])
+        attendance_df = pd.DataFrame(columns=columns)
 
     if email in attendance_df['Email'].values:
         return "Already Marked"
 
     row = df[df["Email"] == email].iloc[0]
-    name = row.get("Name", "Unknown")
+    name = str(row.get("Name", "Unknown"))
+    year = str(row.get("Year", ""))
+    department = str(row.get("Department", ""))
+    college = str(row.get("College", ""))
+    team_members = str(row.get("Team members", ""))
+    phone = str(row.get("Phone", ""))  # Change column name if needed
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    new_entry = {"Email": email, "Name": name, "Time": now, "Status": "Present"}
+    new_entry = {
+        "Email": email,
+        "Name": name,
+        "Year": year,
+        "Department": department,
+        "College": college,
+        "Team members": team_members,
+        "Phone number": phone,
+        "Time": now,
+        "Status": "Present"
+    }
 
-    # ✅ Updated for pandas 2.0+
     attendance_df = pd.concat([attendance_df, pd.DataFrame([new_entry])], ignore_index=True)
-
     attendance_df.to_csv(ATTENDANCE_FILE, index=False)
+
     socketio.emit('attendance_update', {
-    "email": email,
-    "name": name,
-    "college": row.get("College", ""),
-    "time": now,
-    "status": "Present"
-    }, )
+        "email": str(email),
+        "name": name,
+        "year": year,
+        "department": department,
+        "college": college,
+        "team_members": team_members,
+        "phone number": phone,
+        "time": now,
+        "status": "Present"
+    })
 
     return "Marked"
 
 @app.route("/scanner")
 def scanner_dashboard():
     if not session.get("admin"):
-        return redirect("/admin-login")
+        return redirect("/admin-login?next=/scanner")
 
     df = load_responses()
 
@@ -227,41 +254,22 @@ def scanner_dashboard():
                            absent=absent.to_dict('records'))
 
 
-@app.route("/start-scan")
-def start_scan():
-    if not session.get("admin"):
-        return jsonify({"error": "Unauthorized"})
+@app.route("/mark-scan", methods=["POST"])
+def mark_from_client():
+    try:
+        data = request.json
+        email = data.get("email")
+        if not email:
+            return jsonify({"status": "error", "message": "Email not provided"}), 400
 
-    cap = cv2.VideoCapture(0)
-    detector = cv2.QRCodeDetector()
-    result = {}
+        status = mark_attendance(email)
+        return jsonify({"status": "success", "message": status})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
 
-    while True:
-        ret, frame = cap.read()
-        if not ret:
-            break
-
-        data, bbox, _ = detector.detectAndDecode(frame)
-        if data:
-            try:
-                parsed = json.loads(data)
-                email = parsed.get("Email") or parsed.get("email")
-                if email:
-                    status = mark_attendance(email)
-                    result = {"email": email, "status": status}
-                else:
-                    result = {"error": "Invalid QR (No Email found)"}
-            except Exception as e:
-                result = {"error": str(e)}
-            break
-
-    cap.release()
-    cv2.destroyAllWindows()
-    return jsonify(result)
 
 # ---- Main ----
 if __name__ == "__main__":
-        
         os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
         import eventlet
         import eventlet.wsgi

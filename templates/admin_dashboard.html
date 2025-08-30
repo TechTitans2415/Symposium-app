@@ -81,9 +81,30 @@
       color: #555;
       font-weight: bold;
     }
+    .top-left-buttons {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+    }
+    .top-left-buttons a button {
+      padding: 8px 15px;
+      background-color: #004aad;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .top-left-buttons a button:hover {
+      background-color: #003080;
+    }
+
   </style>
 </head>
 <body>
+  <div class="top-left-buttons">
+    <a href="/"><button>Home Page</button></a>
+  </div>
 
   <!-- Logout Button -->
   <a href="/admin-logout" class="logout-btn">Logout</a>
@@ -98,6 +119,7 @@
         <th>Department</th>
         <th>College</th>
         <th>Year</th>
+        <th>Team members</th> 
         <th>QR Status</th>
         <th>Time</th>
         <th>Action</th>
@@ -111,6 +133,7 @@
           <td>{{ participant['Department'] }}</td>
           <td>{{ participant['College'] }}</td>
           <td>{{ participant['Year'] }}</td>
+          <td>{{ participant['Team members'] }}</td>
           <td>{{ participant['status'] }}</td>
           <td>{{ participant['Time'] or '' }}</td>
           <td>

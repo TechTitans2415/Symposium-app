@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-      <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">
   <title>QR Scanner Dashboard</title>
   <style>
     body {
@@ -75,13 +75,44 @@
     hr {
       margin: 40px 0;
     }
+
+    #reader {
+      width: 320px;
+      margin: 20px auto;
+    }
+
+    .top-left-buttons {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+    }    
+    .top-left-buttons a button {
+      padding: 8px 15px;
+      background-color: #004aad;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .top-left-buttons a button:hover {
+      background-color: #003080;
+    }
+
+
   </style>
 </head>
 <body>
+  <div class="top-left-buttons">
+    <a href="/"><button>Home Page</button></a>
+  </div>
+
+
   <h2>📷 Admin Scanner Dashboard</h2>
 
   <div class="center">
-    <button onclick="scanQR()">Scan QR Code</button>
+    <button onclick="startClientScan()">Start QR Scan</button>
+    <div id="reader"></div>
     <p id="resultText" style="color:green;"></p>
   </div>
 
@@ -93,8 +124,10 @@
       <tr>
         <th>Name</th>
         <th>Email</th>
-        <th>College</th>
         <th>Department</th>
+        <th>College</th>
+        <th>year</th> 
+        <th>Team members</th> 
         <th>Time</th>
       </tr>
     </thead>
@@ -103,8 +136,10 @@
         <tr>
           <td>{{ p.Name }}</td>
           <td>{{ p.Email }}</td>
-          <td>{{ p.College or '—' }}</td>
           <td>{{ p.Department or '—' }}</td>
+          <td>{{ p.College or '—' }}</td>
+          <td>{{ p.Year or '—' }}</td>
+          <td>{{ p["Team members"] or '—' }}</td>
           <td>{{ p.Time or '—' }}</td>
         </tr>
       {% endfor %}
@@ -117,8 +152,11 @@
       <tr>
         <th>Name</th>
         <th>Email</th>
-        <th>College</th>
         <th>Department</th>
+        <th>College</th>
+        <th>year</th> 
+        <th>Team members</th> 
+        <th>Time</th>
       </tr>
     </thead>
     <tbody>
@@ -126,36 +164,73 @@
         <tr>
           <td>{{ a.Name }}</td>
           <td>{{ a.Email }}</td>
-          <td>{{ a.College or '—' }}</td>
           <td>{{ a.Department or '—' }}</td>
+          <td>{{ a.College or '—' }}</td>
+          <td>{{ a.Year or '—' }}</td>
+          <td>{{ a["Team members"] or '—' }}</td>
+          <td>{{ a.Time or '—' }}</td>
         </tr>
       {% endfor %}
     </tbody>
   </table>
 
+  <!-- QR scanner library -->
+  <script src="https://unpkg.com/html5-qrcode"></script>
+
   <script>
-    function scanQR() {
-      document.getElementById("resultText").innerText = "Scanning...";
-      fetch("/start-scan")
-        .then(res => res.json())
-        .then(data => {
-          if (data.email) {
-            document.getElementById("resultText").innerText = "✅ Attendance marked: " + data.email;
-            setTimeout(() => window.location.reload(), 1500);
-          } else {
-            document.getElementById("resultText").innerText = "❌ " + (data.error || "Unknown error");
+    function startClientScan() {
+      const html5QrCode = new Html5Qrcode("reader");
+      const qrConfig = { fps: 10, qrbox: 250 };
+
+      html5QrCode.start(
+        { facingMode: "environment" }, // back camera on phones, default camera on laptops
+        qrConfig,
+        (decodedText) => {
+          document.getElementById("resultText").innerText = "Scanned: " + decodedText;
+
+          try {
+            const parsed = JSON.parse(decodedText);
+            const email = parsed.Email || parsed.email;
+
+            if (email) {
+              fetch("/mark-scan", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: email })
+              })
+              .then(res => res.json())
+              .then(data => {
+                if (data.status === "success") {
+                  document.getElementById("resultText").innerText = "✅ Attendance marked: " + email;
+                  setTimeout(() => window.location.reload(), 1500);
+                } else {
+                  document.getElementById("resultText").innerText = "❌ " + data.message;
+                }
+              });
+            }
+          } catch (e) {
+            document.getElementById("resultText").innerText = "❌ Invalid QR format";
           }
-        });
+
+          html5QrCode.stop(); // stop scanning after first success
+        },
+        (errorMsg) => {
+          // optional: log scanning errors
+        }
+      ).catch(err => {
+        document.getElementById("resultText").innerText = "Camera error: " + err;
+      });
     }
   </script>
 
+  <!-- Socket.IO for dynamic updates -->
   <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
   <script>
     const socket = io();
 
     socket.on('attendance_update', function(data) {
         alert("New attendance marked:\n" + data.name + " (" + data.email + ")");
-        location.reload();  // reload to update table
+        location.reload();  // refresh to update table
     });
   </script>
 </body>

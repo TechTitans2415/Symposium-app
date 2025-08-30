@@ -1,5 +1,4 @@
-Column 1,Name,Email,Department,College,I understand that I will have to pay $$ upon arrival
-7/29/2025 15:31:25,Dharun,dharun0216@gmail.com,CSE,Mailam Engineering college,Yes
-7/29/2025 15:32:12,Giri,girikdharan2006@gmail.com,CSE,Mailam Engineering College,Yes
-7/29/2025 15:56:40,Gopal,mdgopal2002@gmail.com,CSE,MEC,Yes
-7/30/2025 21:32:41,ram,kganeshram15@gmail.com,CSE,MEC,Yes
+Timestamp,Name,Email,Department,College,Phone number,Year,Team members,Team Member 1,Team Member 2,Team Member 3,Team Member 4,Event List,Payment
+8/29/2025 15:27:38,Ganesh ,kganeshram15@gmail.com,CSE,MEC,28738392729191,3rd year,2,,,,,"Paper Presentation, Project Expo, Workshop, Connections, Quiz, Debugging, ZapZone",Done
+7/29/2025 15:40:57,Giri ,girikdharan2006@gmail.com,CSE,MEC,28738392729191,3rd year,2,,,,,"Paper Presentation, Project Expo, Workshop, Connections, Quiz, Debugging, ZapZone",Done
+9/30/2025 14:39:17,Yuva ,s.yuvashakthiraj@gmail.com,CSE,MEC,28738392729191,3rd year,2,,,,,"Paper Presentation, Project Expo, Workshop, Connections, Quiz, Debugging, ZapZone",Done

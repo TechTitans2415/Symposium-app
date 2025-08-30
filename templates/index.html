@@ -5,8 +5,39 @@
     <title>College Symposium</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">
+    <style>
+        /* Button container at top-left */
+        .top-left-buttons {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .top-left-buttons a button {
+            padding: 8px 15px;
+            background-color: #004aad;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .top-left-buttons a button:hover {
+            background-color: #003080;
+        }
+    </style>
 </head>
 <body>
+
+    <!-- 🔹 Buttons at top-left -->
+    <div class="top-left-buttons">
+        <a href="/admin-dashboard"><button>Admin Dashboard</button></a>
+        <a href="/scanner"><button>Scan QR</button></a>
+    </div>
 
     <div class="container">
         <div class="logo-header">
@@ -47,7 +78,7 @@
                 <button class="login-btn">Register via Google Form</button>
             </a>
         </div>
-    </div>
 
+    </div>
 </body>
 </html>
